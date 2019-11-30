@@ -1,0 +1,18 @@
+{
+ "name": "niwa-app",
+ "description": "Enter your project description",
+ "author": {
+  "name": "Francisco Miamoto",
+  "email": "fsmiamoto@gmail.com"
+ },
+ "version": "0.1.0",
+ "binaryname": "niwa",
+ "frontend": {
+  "dir": "frontend",
+  "install": "npm install",
+  "build": "npm run build",
+  "bridge": "src",
+  "serve": "npm run start"
+ },
+ "WailsVersion": ""
+}
