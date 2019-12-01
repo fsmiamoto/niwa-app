@@ -4,12 +4,14 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@nivo/line": "^0.59.3",
+    "@wailsapp/runtime": "^1.0.0",
+    "antd": "^3.25.3",
     "core-js": "^3.1.4",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
-    "wails-react-scripts": "3.0.1-2",
     "react-modal": "3.8.1",
-    "@wailsapp/runtime": "^1.0.0"
+    "wails-react-scripts": "3.0.1-2"
   },
   "scripts": {
     "start": "react-scripts start",
