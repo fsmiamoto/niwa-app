@@ -1,3 +1,4 @@
-export function getCurrentHumidity() {
-  return window.backend.getCurrentHumidity();
+export async function getCurrentHumidity() {
+  const [, hum] = await window.backend.getCurrentTempHum();
+  return hum;
 }

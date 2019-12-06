@@ -9,7 +9,7 @@ export function LinePlot(props) {
       data={data}
       margin={{ top: 50, right: 110, bottom: 50, left: 60 }}
       xScale={{ type: "point" }}
-      yScale={{ type: "linear", stacked: true, min: "auto", max: "auto" }}
+      yScale={{ type: "linear", stacked: true, min: 0, max: "50" }}
       axisTop={null}
       axisRight={null}
       axisBottom={{

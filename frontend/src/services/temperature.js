@@ -1,3 +1,4 @@
-export function getCurrentTemperature() {
-  return window.backend.getCurrentTemperature();
+export async function getCurrentTemperature() {
+  const [temp] = await window.backend.getCurrentTempHum();
+  return temp;
 }
