@@ -1,114 +1,86 @@
 package main
 
 import (
-	"fmt"
 	"log"
-	"strconv"
-	"strings"
+	"time"
+
+	"niwa/pkg/database"
+	"niwa/pkg/serial"
 
 	"github.com/leaanthony/mewn"
-	"github.com/tarm/serial"
 	"github.com/wailsapp/wails"
 )
 
-var serialPort *serial.Port
+const (
+	// Max values to avoid saving bad points
+	MaxTemp = 40
+	MaxHum  = 100
 
-func getCurrentTempHum() []float64 {
-	temp, hum, err := readTempHumFromSerial()
+	// App
+	Title  = "Niwa"
+	Width  = 1024
+	Height = 768
+)
 
-	fmt.Printf("Temp: %.2f Hum: %.2f\n", temp, hum)
+func getCurrentTempHum() database.TempHumPoint {
+	temp, hum, err := serial.ReadTempHumFromSerial()
 
 	if err != nil {
 		log.Print(err)
-		return []float64{-255, -255}
-	}
-	return []float64{temp, hum}
-}
 
-func readTempHumFromSerial() (float64, float64, error) {
-	bytes, err := readFromSerial()
-	if err != nil {
-		return 0.0, 0.0, err
-	}
-
-	s := strings.TrimSpace(string(bytes))
-	splited := strings.Split(s, ";")
-
-	if len(splited) != 2 {
-		return 0.0, 0.0, fmt.Errorf("Problem with splited length!")
-	}
-
-	temp, err := strconv.ParseFloat(strings.TrimLeft(splited[0], "\x00"), 32)
-	if err != nil {
-		return 0.0, 0.0, err
-	}
-
-	hum, err := strconv.ParseFloat(splited[1], 32)
-	if err != nil {
-		return 0.0, 0.0, err
-	}
-
-	return temp, hum, nil
-}
-
-func readFromSerial() ([]byte, error) {
-	buf := make([]byte, 1)
-	data := make([]byte, 32)
-
-	// Wait for the first slash
-	for {
-		_, err := serialPort.Read(buf)
-		if err != nil {
-			return nil, nil
-		}
-
-		if string(buf[0]) == "/" {
-			break
+		return database.TempHumPoint{
+			Temp:      -255,
+			Hum:       -255,
+			Timestamp: time.Now().Format("2006-01-02T15:04:05Z07:00"),
 		}
 	}
 
-	// Append bytes until a other slash is found
-	for {
-		_, err := serialPort.Read(buf)
-		if err != nil {
-			return nil, nil
+	if temp > MaxTemp || hum > MaxHum {
+		log.Print("Invalid values for temp or humidity")
+		return database.TempHumPoint{
+			Temp:      -255,
+			Hum:       -255,
+			Timestamp: time.Now().Format("2006-01-02T15:04:05Z07:00"),
 		}
-
-		if string(buf[0]) == "/" {
-			break
-		}
-
-		data = append(data, buf[0])
 	}
 
-	return data, nil
+	log.Printf("Temp: %.2f Hum: %.2f\n", temp, hum)
+
+	newPoint := database.TempHumPoint{
+		Temp:      temp,
+		Hum:       hum,
+		Timestamp: time.Now().Format("2006-01-02T15:04:05Z07:00"),
+	}
+
+	database.InsertPoint(newPoint)
+
+	return newPoint
 }
 
 func main() {
-	var err error
+	database.Init("./data.db")
+	serial.Init("/dev/ttyACM0", 9600)
 
-	c := &serial.Config{Name: "/dev/ttyACM0", Baud: 9600}
-
-	serialPort, err = serial.OpenPort(c)
-
-	if err != nil {
-		log.Fatal(err)
-	}
+	defer database.Close()
+	defer serial.Close()
 
 	js := mewn.String("./frontend/build/static/js/main.js")
 	css := mewn.String("./frontend/build/static/css/main.css")
 
 	app := wails.CreateApp(&wails.AppConfig{
-		Width:  1024,
-		Height: 768,
-		Title:  "niwa-app",
+		Width:  Width,
+		Height: Height,
+		Title:  Title,
 		JS:     js,
 		CSS:    css,
 		Colour: "#131313",
 	})
 
-	// Bind functions for use in the frontend
+	// Bind functions to the frontend
 	app.Bind(getCurrentTempHum)
+	app.Bind(database.GetPoints)
+	app.Bind(serial.TurnPump)
+
 	app.Run()
 
 }
