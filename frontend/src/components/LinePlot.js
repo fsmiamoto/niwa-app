@@ -2,14 +2,19 @@ import React from "react";
 import { ResponsiveLine } from "@nivo/line";
 
 export function LinePlot(props) {
-  const { data, yAxisLabel, xAxisLabel } = props;
+  const { data, yAxisLabel, xAxisLabel, yAxisMax, colorScheme } = props;
 
   return (
     <ResponsiveLine
       data={data}
-      margin={{ top: 50, right: 110, bottom: 50, left: 60 }}
+      margin={{ top: 30, right: 50, bottom: 50, left: 60 }}
       xScale={{ type: "point" }}
-      yScale={{ type: "linear", stacked: true, min: 0, max: "50" }}
+      yScale={{
+        type: "linear",
+        stacked: true,
+        min: 0,
+        max: yAxisMax ? yAxisMax : "auto"
+      }}
       axisTop={null}
       axisRight={null}
       axisBottom={{
@@ -30,7 +35,7 @@ export function LinePlot(props) {
         legendOffset: -40,
         legendPosition: "middle"
       }}
-      colors={{ scheme: "nivo" }}
+      colors={{ scheme: colorScheme ? colorScheme : "nivo" }}
       pointSize={10}
       pointColor={{ theme: "background" }}
       pointBorderWidth={2}
@@ -38,32 +43,6 @@ export function LinePlot(props) {
       pointLabel="y"
       pointLabelYOffset={-12}
       useMesh={true}
-      legends={[
-        {
-          anchor: "bottom-right",
-          direction: "column",
-          justify: false,
-          translateX: 100,
-          translateY: 0,
-          itemsSpacing: 0,
-          itemDirection: "left-to-right",
-          itemWidth: 80,
-          itemHeight: 20,
-          itemOpacity: 0.75,
-          symbolSize: 12,
-          symbolShape: "circle",
-          symbolBorderColor: "rgba(0, 0, 0, .5)",
-          effects: [
-            {
-              on: "hover",
-              style: {
-                itemBackground: "rgba(0, 0, 0, .03)",
-                itemOpacity: 1
-              }
-            }
-          ]
-        }
-      ]}
     />
   );
 }
